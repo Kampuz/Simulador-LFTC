@@ -1,0 +1,38 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 00;
+}
+
+#controls {
+    padding: 10 px;
+    background: #000;
+}
+
+button {margin-right: 5px;}
+
+#canvas {
+    width: 100vw;
+    height: 90vh;
+    background: #f0f0f0;
+    position: relative;
+}
+
+.state {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #3498db;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.transition-label {
+    background: #fff;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 120px;
+}
+

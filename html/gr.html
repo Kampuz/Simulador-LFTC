@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Gramática Regular</title>
+    <link rel="stylesheet" href="../css/gr.css">
+</head>
+<body>
+    <h1>Simulador de Gramática Regular</h1>
+    
+    <div id="insert-area">
+        <input id="lhs" type="text" maxlength="1" placeholder="não terminal">
+        <input id="rhs" type="text" maxlength="2" placeholder="produzido">
+        <button id="insert-btn">Inserir Regras</button>
+    </div>
+
+    <table id="rules-table">
+        <thead>
+            <tr>
+                <th>LHS</th>
+                <th>&#8594</th>
+                <th>RHS</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <div id="test-area">
+        <input id="test-word" type="text" placeholder="Palavra teste">
+        <button id="validate-btn">Validar</button>
+    </div>
+
+    <div id="result"></div>
+
+    <script src="../js/gr.js"></script>
+</body>
+</html>
