@@ -1,11 +1,11 @@
 body {
     font-family: Arial, sans-serif;
     margin: 0;
-    padding: 00;
+    padding: 0;
 }
 
 #controls {
-    padding: 10 px;
+    padding: 10px;
     background: #000;
 }
 
@@ -30,9 +30,10 @@ button {margin-right: 5px;}
 }
 
 .transition-label {
-    background: #fff;
+    background: white;
+    border: 1px solid #ccc;
     padding: 2px 4px;
     border-radius: 3px;
-    font-size: 120px;
+    font-size: 12px;
 }
 

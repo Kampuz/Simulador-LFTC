@@ -1,75 +1,107 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const canvas = document.getElementById("canvas");
-    const jsPlumbInstance = jsPlumb.getInstance();
-    let stateCount = 0;
-    const states = {};
-    let mode = "selection";
-    let selectedState = null;
+// af.js
+jsPlumb.ready(function () {
+  const instance = jsPlumb.getInstance({
+    Connector: ["Bezier", { curviness: 50 }],
+    PaintStyle: { stroke: "#3498db", strokeWidth: 3 },
+    Endpoint: ["Dot", { radius: 5 }],
+    EndpointStyle: { fill: "#3498db" },
+    Anchors: ["Continuous", "Continuous"],
+    Container: "canvas",
+  });
 
+  const canvas = document.getElementById("canvas");
+  let stateCounter = 0;
+  let selectedElement = null;
+  let addingTransition = false;
 
-    document.getElementById("selectionBtn").onclick = () => { mode = "selection"; resetCursor(); };
-    document.getElementById("addStateBtn").onclick = () => { mode = "addState"; resetCursor(); };
-    document.getElementById("addTransitionBtn").onclick = () => { mode = "addTransition"; resetCursor(); };
-    document.getElementById("removeBtn").onclick = () => { mode = "remove"; resetCursor(); };
+  // ---- Create a new state ----
+  function addState(x = 100, y = 100) {
+    stateCounter++;
+    const state = document.createElement("div");
+    state.classList.add("state");
+    state.id = "state" + stateCounter;
+    state.innerText = "q" + stateCounter;
+    state.style.position = "absolute";
+    state.style.left = x + "px";
+    state.style.top = y + "px";
 
-    function resetCursor() {
-        canvas.style.cursor = (mode === "addState") ? "crosshair" : "default";
-    }
+    canvas.appendChild(state);
 
-    jsPlumbInstance.importDefaults({
-        Connector: ["Bezier", { curviness: 50}],
-        Anchors: ["Continuous", "Continuous"],
-        EndPoint: ["Dot", { radius: 5 }],
-        PaintStyle: { stroke: "#3498db", strokeWidth: 2 },
-        EndpointStyle: { fill: "#3498db" },
-        HoverPaintStyle: { stroke: "#e74c3c"}
+    // Make draggable
+    instance.draggable(state);
+
+    // Allow connections
+    instance.makeSource(state, {
+      filter: ".state",
+      anchor: "Continuous",
+      connectorStyle: { stroke: "#2c3e50", strokeWidth: 2 },
+      maxConnections: -1,
     });
 
-    canvas.addEventListener("click", (e) => {
-        if (mode !== "addState") return;
-        const id = "state" + stateCount++;
-        const stateEl = document.createElement("div");
-        stateEl.className = "state";
-        stateEl.id = id;
-        stateEl.textContent = id;
-        stateEl.style.top = e.offsetY - 30 + "px";
-        stateEl.style.left = e.offsetX - 30 + "px";
-        canvas.appendChild(stateEl);
-        states[id] = { id, transitions: [] };
-
-        jsPlumbInstance.draggable(stateEl);
-
-        jsPlumbInstance.makeSource(stateEl, { maxConnections: -1});
-        jsPlumbInstance.makeTarget(stateEl);
-
-        stateEl.addEventListener("click", (ev) => handleStateClick(ev, stateEl));
+    instance.makeTarget(state, {
+      dropOptions: { hoverClass: "dragHover" },
+      anchor: "Continuous",
+      allowLoopback: true,
     });
 
-    function handleStateClick(e, stateEl) {
-        e.stopPropagation();
-
-        if (mode === "addTransition") {
-            if (!selectedState) {
-                selectedState = stateEl;
-                stateEl.style.border = "3px solid yellow";
-            } else {
-                const label = prompt("Enter transition symbol:");
-                if (!label) { selectedState.style.border = ""; selectedState = null; return;}
-                const conn = jsPlumbInstance.connect({
-                    source: selectedState.id,
-                    target: stateEl.id,
-                    overlays: [["label", {label, cssClass: "transition-lavel"}]]
-                });
-                states[selectedState.id].transitions.push({ symbol: label, target: stateEl.id});
-                selectedState.style.border = "";
-                selectedState = null;
-            }
-        } else if (mode === "remove") {
-            jsPlumbInstance.select({ source: stateEl.id}).delete();
-            jsPlumbInstance.select({ target: stateEl.id}).delete();
-
-            stateEl.remove();
-            delete states[stateEl.id];
+    // Click logic
+    state.addEventListener("click", () => {
+      if (addingTransition) {
+        if (!selectedElement) {
+          selectedElement = state;
+          state.style.background = "#e74c3c"; // highlight start
+        } else {
+          // connect selected → current
+          instance.connect({
+            source: selectedElement,
+            target: state,
+            overlays: [
+              [
+                "Label",
+                {
+                  label: prompt("Transition symbol:", "a") || "",
+                  id: "label",
+                  cssClass: "transition-label",
+                  location: 0.5
+                },
+              ],
+            ],
+          });
+          selectedElement.style.background = "#3498db";
+          selectedElement = null;
+          addingTransition = false;
         }
+      } else {
+        // Select for removal
+        if (selectedElement) selectedElement.style.background = "#3498db";
+        selectedElement = state;
+        state.style.background = "#2ecc71"; // highlight selection
+      }
+    });
+
+    return state;
+  }
+
+  // ---- Button handlers ----
+  document.getElementById("addStateBtn").addEventListener("click", () => {
+    addState(150 + stateCounter * 70, 150);
+  });
+
+  document.getElementById("addTransitionBtn").addEventListener("click", () => {
+    addingTransition = true;
+    if (selectedElement) {
+      selectedElement.style.background = "#3498db";
+      selectedElement = null;
     }
+  });
+
+  document.getElementById("removeBtn").addEventListener("click", () => {
+    if (selectedElement) {
+      instance.remove(selectedElement);
+      selectedElement = null;
+    }
+  });
+
+  // ---- Initial state ----
+  addState(150, 150);
 });
